@@ -10,6 +10,8 @@ import java.net.*;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.bukkit.Bukkit.getLogger;
+
 public class Updater {
     private static final String UPDATE_URL="https://api.github.com/repos/SJones-BWGY/DoorLock/releases/latest";
     private static final boolean DONT_DOWNLOAD=false;
@@ -18,7 +20,13 @@ public class Updater {
     private static File file;
     private static boolean updated=false;
 
+    private static final String UPD_False="false";
+
     public static boolean fetchUpdates() {
+        if (UPD_False == "false") {
+            getLogger().info("Функция проверки обновлений деактивирована!");
+            return false;
+        }
         if (DONT_DOWNLOAD) return false;
         try {
             Doorlock.getInstance().getLogger().info("Scanning for updates...");
@@ -80,10 +88,10 @@ public class Updater {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Bukkit.getLogger().info("Update installed. Reloading.");
+            getLogger().info("Update installed. Reloading.");
             Bukkit.getServer().reload();
             if (!file.renameTo(Doorlock.getJarfile()))
-                Bukkit.getLogger().severe("Update failed. Could not copy to jar!");
+                getLogger().severe("Update failed. Could not copy to jar!");
         });
         if(updated)thr.start();
     }

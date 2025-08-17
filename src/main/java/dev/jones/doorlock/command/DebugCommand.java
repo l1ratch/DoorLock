@@ -15,7 +15,7 @@ public class DebugCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args[0].equalsIgnoreCase("getitemtags")){
             Player p=(Player) sender;
-            p.sendMessage("§cThis command has been removed due to being unsupported in 1.14");
+            p.sendMessage("§cЭта команда была удалена, так как не поддерживается в версии 1.14");
         }
         return false;
     }

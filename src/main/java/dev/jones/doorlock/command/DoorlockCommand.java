@@ -16,17 +16,25 @@ public class DoorlockCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length==1){
             if(args[0].equalsIgnoreCase("version")){
-                sender.sendMessage("§cDoorlock by _joones is installed on this server");
-                sender.sendMessage("§7Plugin version: "+ SaveUtil.getVersion());
+                sender.sendMessage("§cНа этом сервере установлен Doorlock от _joones");
+                sender.sendMessage("§7Версия плагина: "+ SaveUtil.getVersion());
+                sender.sendMessage("§6Обновил и перевел плагин: l1ratch");
+                return true;
+            }else if(args[0].equalsIgnoreCase("help")){
+                sender.sendMessage("§6Плагин DoorLock от _joones (https://github.com/SJones-BWGY/DoorLock)");
+                sender.sendMessage("§6Обновил и перевел на русский язык: l1ratch (https://github.com/l1ratch)");
+                sender.sendMessage("§6Spigot официального плагина: https://www.spigotmc.org/resources/doorlock.96169");
+                sender.sendMessage("§6Страница моего форка плагина: --");
+                Updater.fetchUpdates();
                 return true;
             }else if(args[0].equalsIgnoreCase("update")){
-                sender.sendMessage("§cChecking for updates...");
-                sender.sendMessage("§7Look in the console for more information.");
+                sender.sendMessage("§cПроверяю наличие обновлений...");
+                sender.sendMessage("§7Дополнительную информацию можно найти в консоли.");
                 Updater.fetchUpdates();
                 return true;
             }else if(args[0].equalsIgnoreCase("reload")){
-                sender.sendMessage("§cReloading the plugin...");
-                sender.sendMessage("§7This can take a little while.");
+                sender.sendMessage("§cПерезагружаем плагин...");
+                sender.sendMessage("§7Это может занять некоторое время.");
                 Bukkit.getScheduler().scheduleSyncDelayedTask(Doorlock.getInstance(),()->{
                     Doorlock.getInstance().getServer().resetRecipes();
                     Doorlock.getInstance().onEnable();

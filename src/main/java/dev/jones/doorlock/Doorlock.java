@@ -30,6 +30,7 @@ public final class Doorlock extends JavaPlugin {
     private static List<NamespacedKey> recipes=new ArrayList<>();
     private static File file;
     private static final boolean DEBUG=false;
+    long updateCheckSetting = this.getConfig().getLong("update", 0);
     @Override
     public void onEnable() {
         /*
@@ -43,7 +44,7 @@ public final class Doorlock extends JavaPlugin {
         this.reloadConfig();
         for (String key : this.getConfig().getDefaults().getKeys(true)) {
             if(!this.getConfig().contains(key,true)){
-                this.getLogger().warning("Config path "+key+" is missing! Adding it.");
+                this.getLogger().warning("Путь к конфигурации "+key+" отсутствует! Добавляем.");
                 this.getConfig().set(key,this.getConfig().getDefaults().get(key));
             }
         }
@@ -51,10 +52,14 @@ public final class Doorlock extends JavaPlugin {
         /*
         Scan for updates
          */
-        if(this.getConfig().getLong("update")==0&&Updater.fetchUpdates()){
-            this.getPluginLoader().disablePlugin(this);
-            return;
-        }
+        // Если проверка обновлений ВКЛЮЧЕНА (update != 0), то выполняем проверку
+        if (updateCheckSetting != 0) {
+            if (Updater.fetchUpdates()) {
+                getLogger().info("Доступно обновление плагина!");
+                // Дополнительные действия при обнаружении обновлений (если нужно)
+            } else getLogger().info("У вас установлена актуальная версия плагина!");
+        } else getLogger().info("Проверка обновлений выключена!");
+        // Если update = 0, то ничего не делаем — проверки нет
         /*
         Register Generic Commands
          */
@@ -75,9 +80,10 @@ public final class Doorlock extends JavaPlugin {
         Register Key
          */
         ItemStack keyItem=new ItemStackBuilder(Material.GOLD_NUGGET)
-                .setName("§a§lKey")
-                .setLore("§7Locks doors.","§7(Shift-Click to unlock)")
+                .setName("§a§lКлюч")
+                .setLore("§7Запирает двери.","§7(нажмите и удерживайте Shift, чтобы разблокировать)")
                 .addNbtTag("iskey","1")
+                .setCustomModelData(9999101)
                 .build();
 
         NamespacedKey keyKey=new NamespacedKey(this,"key");
@@ -96,9 +102,10 @@ public final class Doorlock extends JavaPlugin {
         Register BlockLocker
          */
         ItemStack blockClaimerItem=new ItemStackBuilder(Material.IRON_AXE)
-                .setName("§a§lBlock Locker")
-                .setLore("§7Makes blocks lockable with keys.")
+                .setName("§a§lБлокировщик блоков")
+                .setLore("§7Делает блоки запираемыми с помощью ключей.")
                 .addNbtTag("isblocklocker","1")
+                .setCustomModelData(9999102)
                 .build();
 
         NamespacedKey blockClaimerKey=new NamespacedKey(this,"block_locker");
@@ -123,9 +130,10 @@ public final class Doorlock extends JavaPlugin {
         Register Doordrill
          */
         ItemStack doorDrillItem=new ItemStackBuilder(Material.DIAMOND_AXE)
-                .setName("§a§lDoordrill")
-                .setLore("§7Can drill through locked doors")
+                .setName("§a§lРазблокировщик")
+                .setLore("§7Может разблокировать запертые двери")
                 .addNbtTag("isdoordrill","1")
+                .setCustomModelData(9999103)
                 .build();
         Damageable doorDrillMeta=(Damageable) doorDrillItem.getItemMeta();
         doorDrillMeta.setDamage(1550);
@@ -150,13 +158,15 @@ public final class Doorlock extends JavaPlugin {
 
         DoorlockHearbeat.start();
 
+        getLogger().info("§eDoorLock §aуспешно запущен на вашем сервере!");
+        getLogger().info("§6Обновил и перевел плагин: l1ratch");
     }
 
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
         this.getServer().resetRecipes();
-        Updater.pluginDisabled();
+        // Updater.pluginDisabled();
     }
 
     public static Plugin getInstance() {

@@ -73,7 +73,7 @@ public class KeyListener implements Listener {
         }
         if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta()==null){
             if(locked){
-                e.getPlayer().sendMessage("§cYou need the correct key to interact with this block!");
+                e.getPlayer().sendMessage("§cЧтобы взаимодействовать с этим блоком, вам нужен правильный ключ!");
             }
             return;
         }
@@ -88,7 +88,7 @@ public class KeyListener implements Listener {
             if(e.getAction()==Action.LEFT_CLICK_BLOCK){
                 e.setCancelled(false);
             }else{
-                e.getPlayer().sendMessage("§cYou can't interact with locked blocks with this item.");
+                e.getPlayer().sendMessage("§cС помощью этого предмета вы не сможете взаимодействовать с заблокированными блоками.");
             }
             return;
         }
@@ -96,18 +96,18 @@ public class KeyListener implements Listener {
             e.setCancelled(false);
             if(e.getPlayer().isSneaking()&&e.getAction()==Action.RIGHT_CLICK_BLOCK){
                 SaveUtil.unlockDoor(door);
-                e.getPlayer().sendMessage("§aBlock unlocked.");
+                e.getPlayer().sendMessage("§aБлок разблокирован.");
             }
         }else if(SaveUtil.getKey(door)==null&&!key.equals("missing")){
             SaveUtil.lockDoor(key,door);
-            e.getPlayer().sendMessage("§aBlock locked.");
+            e.getPlayer().sendMessage("§aБлок заблокирован.");
             e.setCancelled(true);
         }else if(SaveUtil.getKey(door)==null){
             /*
             Ignore if door has no key
              */
         }else{
-            e.getPlayer().sendMessage("§cYou need the correct key to interact with this block!");
+            e.getPlayer().sendMessage("§cЧтобы взаимодействовать с этим блоком, вам нужен правильный ключ!");
         }
     }
     @EventHandler

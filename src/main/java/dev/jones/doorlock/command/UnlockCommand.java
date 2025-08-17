@@ -17,13 +17,13 @@ public class UnlockCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length!=0)return false;
         if(!(sender instanceof Player)){
-            sender.sendMessage("§cYou have to be a player to run this command!");
+            sender.sendMessage("§cЧтобы выполнить эту команду, вы должны быть игроком!");
             return true;
         }
         Player p=(Player) sender;
         Block target=p.getTargetBlockExact(5);
         if(target==null){
-            p.sendMessage("§cPlease look at the block you want to unlock.");
+            p.sendMessage("§cПожалуйста, посмотрите на блок, который вы хотите разблокировать.");
             return true;
         }
         Location door=null;
@@ -52,16 +52,16 @@ public class UnlockCommand implements CommandExecutor {
             if(SaveUtil.isLockable(target.getLocation())){
                 door=target.getLocation();
             }else {
-                p.sendMessage("§cPlease look at a door or a lockable block!");
+                p.sendMessage("§cПожалуйста, посмотрите на дверь или запертый блок!");
                 return true;
             }
         }
         if(SaveUtil.getKey(door)==null){
-            p.sendMessage("§cThis block is not locked!");
+            p.sendMessage("§cЭтот блок не заблокирован!");
             return true;
         }
         SaveUtil.unlockDoor(door);
-        p.sendMessage("§aBlock has been unlocked!");
+        p.sendMessage("§aБлок был разблокирован!");
 
 
         return true;

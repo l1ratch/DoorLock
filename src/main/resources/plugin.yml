@@ -1,22 +1,22 @@
 name: Doorlock
-version: 1.0
+version: 1.0.2
 main: dev.jones.doorlock.Doorlock
-api-version: 1.14
-authors: [ _joones ]
-description: Lock doors with keys.
+api-version: '1.20'
+authors: [ _joones, l1ratch ]
+description: Запирайте двери на ключи.
 commands:
   dldebug:
-    description: Debug Command(Only intended for developers, can be enabled in the Doorlock class)
+    description: Команда отладки (предназначена только для разработчиков, может быть включена в классе Doorlock)
     permission: doorlock.debug
-    permission-message: §cYou are not permitted to use this command!
+    permission-message: §cВам запрещено использовать эту команду!
   doorlock:
-    description: Can be used to reload the plugin, to check for updates or check the plugin version
+    description: Можно использовать для перезагрузки плагина, проверки наличия обновлений или проверки версии плагина
     permission: doorlock.manage
-    permission-message: §cYou are not permitted to use this command!
-    usage: §cUse /doorlock <version|update|reload>
+    permission-message: §cВам запрещено использовать эту команду!
+    usage: §cИспользуйте /doorlock <version|help|update|reload>
   unlock:
-    description: Unlocks the block you are looking at.
+    description: Открывает блок, на который вы смотрите.
     permission: doorlock.unlock
-    permission-message: §cYou are not permitted to use this command!
-    usage: §cUse /unlock without arguments
+    permission-message: §cВам запрещено использовать эту команду!
+    usage: §cИспользуйте /unlock без аргументов
 

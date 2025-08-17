@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 public class DisabledCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        sender.sendMessage("§cThis command is currently disabled.");
+        sender.sendMessage("§cВ настоящее время эта команда отключена.");
         return false;
     }
 }

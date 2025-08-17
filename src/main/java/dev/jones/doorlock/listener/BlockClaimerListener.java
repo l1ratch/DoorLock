@@ -3,11 +3,13 @@ package dev.jones.doorlock.listener;
 import dev.jones.doorlock.Doorlock;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.SaveUtil;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -18,35 +20,49 @@ import java.util.List;
 public class BlockClaimerListener implements Listener {
     List<Player> timeout=new ArrayList<>();
     @EventHandler
-    public void onInteract(PlayerInteractEvent e){
-        if(timeout.contains(e.getPlayer())){
+    public void onInteract(PlayerInteractEvent e) {
+        // Проверяем, что игрок кликнул по блоку (не по воздуху)
+        if (e.getClickedBlock() == null) return;
+
+        // Получаем предмет в руке
+        ItemStack itemInHand = e.getPlayer().getInventory().getItemInMainHand();
+
+        // Если в руке ничего нет или это не специальный ключ — игнорируем
+        if (itemInHand.getType() == Material.AIR) return;
+
+        // Проверяем, есть ли у предмета нужный NBT-тег
+        if (itemInHand.hasItemMeta()) {
+            PersistentDataContainer container = itemInHand.getItemMeta().getPersistentDataContainer();
+            boolean isBlockLocker = container.has(
+                    new NamespacedKey(Doorlock.getInstance(), "isblocklocker"),
+                    PersistentDataType.STRING
+            );
+
+            // Если это не ключ — выходим без сообщения
+            if (!isBlockLocker) return;
+        } else {
+            // Если у предмета нет ItemMeta (например, обычный блок) — тоже игнорируем
+            return;
+        }
+
+        // --- Дальше идёт логика для ключей ---
+        if (timeout.contains(e.getPlayer())) {
             e.setCancelled(true);
             return;
         }
         timeout.add(e.getPlayer());
-        DoorlockHearbeat.queueRunnable(()->{
-            timeout.remove(e.getPlayer());
-        });
+        DoorlockHearbeat.queueRunnable(() -> timeout.remove(e.getPlayer()));
 
-        if(e.getClickedBlock()==null)return;
-        if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta()!=null){
-            PersistentDataContainer container=e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer();
-            boolean cont=false;
-            if(!container.has(new NamespacedKey(Doorlock.getInstance(),"isblocklocker"),PersistentDataType.STRING)){
-                e.getPlayer().sendMessage("item is no blocklocker!");
-                return;
-            }
+        e.setCancelled(true);
 
-            e.setCancelled(true);
-            if(SaveUtil.isLockable(e.getClickedBlock().getLocation())&&SaveUtil.getKey(e.getClickedBlock().getLocation())==null){
-                SaveUtil.disableLocking(e.getClickedBlock().getLocation());
-                e.getPlayer().sendMessage("§a§lThe block is no longer lockable!");
-            }else if(!SaveUtil.isLockable(e.getClickedBlock().getLocation())&&SaveUtil.getKey(e.getClickedBlock().getLocation())==null){
-                SaveUtil.enableLocking(e.getClickedBlock().getLocation());
-                e.getPlayer().sendMessage("§a§lThe block is now lockable!");
-            }else{
-                e.getPlayer().sendMessage("§c§lThis block is currently locked!");
-            }
+        if (SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
+            SaveUtil.disableLocking(e.getClickedBlock().getLocation());
+            e.getPlayer().sendMessage("§a§lБлок больше нельзя заблокировать!");
+        } else if (!SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
+            SaveUtil.enableLocking(e.getClickedBlock().getLocation());
+            e.getPlayer().sendMessage("§a§lТеперь блок можно заблокировать!");
+        } else {
+            e.getPlayer().sendMessage("§c§lЭтот блок в данный момент заблокирован!");
         }
     }
 

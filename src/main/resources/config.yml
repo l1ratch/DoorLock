@@ -1,10 +1,14 @@
-# Update mode
-# 0 = Disable updates completely(even through commands)
-# 1 = Disable updates on restart
-# 2 = Enable all updates
-update: 2
-# Enable or disable items(true=enables; false=disabled)
+# Плагин DoorLock от _joones (https://github.com/SJones-BWGY/DoorLock)
+# Обновил и перевел на русский язык: l1ratch (https://github.com/l1ratch)
+
+# Режим обновления
+# 0 = Полностью отключить обновления (даже с помощью команд)
+# 1 = Отключить обновления при перезагрузке
+# 2 = Включить все обновления
+update: 0
+
+# Включение и отключение элементов (true = включено; false = отключено)
 items:
-    key: true
-    blocklocker: true
-    doordrill: true
+    key: true # CustomModelData: 9999101
+    blocklocker: true # CustomModelData: 9999102
+    doordrill: true # CustomModelData: 9999103

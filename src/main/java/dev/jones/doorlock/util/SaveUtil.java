@@ -16,7 +16,7 @@ public class SaveUtil {
         configFile=new File(Doorlock.getInstance().getDataFolder(),"data.yml");
         try {
             if(configFile.createNewFile()){
-                Doorlock.getInstance().getLogger().warning("Data File does not exist!");
+                Doorlock.getInstance().getLogger().warning("Файл с данными не существует!");
             }
         } catch (IOException e) {
             e.printStackTrace();
