@@ -41,14 +41,22 @@ public final class Doorlock extends JavaPlugin {
         /*
         Load config
          */
-        this.reloadConfig();
-        for (String key : this.getConfig().getDefaults().getKeys(true)) {
-            if(!this.getConfig().contains(key,true)){
-                this.getLogger().warning("Путь к конфигурации "+key+" отсутствует! Добавляем.");
-                this.getConfig().set(key,this.getConfig().getDefaults().get(key));
+        saveDefaultConfig(); // создаёт config.yml в папке плагина, если его нет
+
+        // Загружаем дефолты из resources/config.yml
+        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
+                new InputStreamReader(getResource("config.yml"))
+        );
+        getConfig().addDefaults(defaultConfig);
+        getConfig().options().copyDefaults(true);
+
+        for (String key : defaultConfig.getKeys(true)) {
+            if (!getConfig().contains(key, true)) {
+                getLogger().warning("Путь к конфигурации " + key + " отсутствует! Добавляем.");
+                getConfig().set(key, defaultConfig.get(key));
             }
         }
-        this.saveConfig();
+        saveConfig();
         /*
         Scan for updates
          */

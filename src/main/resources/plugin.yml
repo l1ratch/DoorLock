@@ -4,6 +4,7 @@ main: dev.jones.doorlock.Doorlock
 api-version: '1.20'
 authors: [ _joones, l1ratch ]
 description: Запирайте двери на ключи.
+softdepend: [WorldGuard]
 commands:
   dldebug:
     description: Команда отладки (предназначена только для разработчиков, может быть включена в классе Doorlock)
