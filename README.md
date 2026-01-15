@@ -15,9 +15,6 @@
 ## 🛠 Крафты
 <img width="415" height="492" alt="image" src="https://github.com/user-attachments/assets/a2917901-92ba-40ba-a7c5-5eaed1b8c580" />
 
-
-Все сообщения можно изменить в файле `messages.yml`.
-
 ## 📜 Благодарности
 
 Этот проект является форком и улучшенной версией плагина [DoorLock](https://github.com/SJones-BWGY/DoorLock) от **SJones-BWGY**. 
