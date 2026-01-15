@@ -13,23 +13,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.bukkit.Bukkit.getLogger;
 
 public class Updater {
-    private static final String UPDATE_URL="https://api.github.com/repos/SJones-BWGY/DoorLock/releases/latest";
-    private static final boolean DONT_DOWNLOAD=false;
-    private static final boolean ALWAYS_DOWNLOAD=false;
+    private static final String UPDATE_URL="https://api.github.com/repos/l1ratch/DoorLock/releases/latest";
 
     private static File file;
     private static boolean updated=false;
 
-    private static final String UPD_False="false";
-
     public static boolean fetchUpdates() {
-        if (UPD_False == "false") {
-            getLogger().info("Функция проверки обновлений деактивирована!");
-            return false;
-        }
-        if (DONT_DOWNLOAD) return false;
         try {
-            Doorlock.getInstance().getLogger().info("Scanning for updates...");
+            Doorlock.getInstance().getLogger().info(Messages.get("updater.scanning"));
             URL url = new URL(UPDATE_URL);
             InputStream stream = null;
             stream = url.openStream();
@@ -46,8 +37,8 @@ public class Updater {
             String pluginVersion = SaveUtil.getVersion();
             String currentVersion = obj.getString("tag_name");
 
-            if (pluginVersion == null || !pluginVersion.equals(currentVersion) || ALWAYS_DOWNLOAD) {
-                Doorlock.getInstance().getLogger().info("Downloading update...");
+            if (pluginVersion == null || !pluginVersion.equals(currentVersion)) {
+                Doorlock.getInstance().getLogger().info(Messages.get("updater.downloading"));
                 URL dl = new URL(obj.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"));
                 file=new File(Doorlock.getJarfile().getParentFile(),Doorlock.getJarfile().getName()+".new");
                 file.createNewFile();
@@ -61,38 +52,18 @@ public class Updater {
                 } catch (IOException e) {
                     // handle exception
                 }
-                Doorlock.getInstance().getLogger().info("Update downloaded. Installing...");
+                Doorlock.getInstance().getLogger().info(Messages.get("updater.downloaded"));
                 SaveUtil.setVersion(currentVersion);
                 updated=true;
 
                 return true;
             }else{
-                Doorlock.getInstance().getLogger().info("You plugin has the newest version installed!");
+                Doorlock.getInstance().getLogger().info(Messages.get("updater.latest_installed"));
             }
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
         return false;
-    }
-    public static void pluginDisabled(){
-        File old=Doorlock.getJarfile();
-        Thread thr = new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            try {
-                Files.delete(old.toPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            getLogger().info("Update installed. Reloading.");
-            Bukkit.getServer().reload();
-            if (!file.renameTo(Doorlock.getJarfile()))
-                getLogger().severe("Update failed. Could not copy to jar!");
-        });
-        if(updated)thr.start();
     }
 }

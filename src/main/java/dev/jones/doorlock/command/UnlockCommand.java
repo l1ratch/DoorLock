@@ -1,7 +1,7 @@
 package dev.jones.doorlock.command;
 
+import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
-import dev.jones.doorlock.util.Updater;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
@@ -17,13 +17,13 @@ public class UnlockCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length!=0)return false;
         if(!(sender instanceof Player)){
-            sender.sendMessage("§cЧтобы выполнить эту команду, вы должны быть игроком!");
+            sender.sendMessage(Messages.get("command.only_player"));
             return true;
         }
         Player p=(Player) sender;
         Block target=p.getTargetBlockExact(5);
         if(target==null){
-            p.sendMessage("§cПожалуйста, посмотрите на блок, который вы хотите разблокировать.");
+            p.sendMessage(Messages.get("door.look_at_block"));
             return true;
         }
         Location door=null;
@@ -52,16 +52,16 @@ public class UnlockCommand implements CommandExecutor {
             if(SaveUtil.isLockable(target.getLocation())){
                 door=target.getLocation();
             }else {
-                p.sendMessage("§cПожалуйста, посмотрите на дверь или запертый блок!");
+                p.sendMessage(Messages.get("door.look_at_door_or_locked"));
                 return true;
             }
         }
         if(SaveUtil.getKey(door)==null){
-            p.sendMessage("§cЭтот блок не заблокирован!");
+            p.sendMessage(Messages.get("door.not_locked"));
             return true;
         }
         SaveUtil.unlockDoor(door);
-        p.sendMessage("§aБлок был разблокирован!");
+        p.sendMessage(Messages.get("command.unlock.success"));
 
 
         return true;

@@ -2,6 +2,7 @@ package dev.jones.doorlock.listener;
 
 import dev.jones.doorlock.Doorlock;
 import dev.jones.doorlock.util.DoorlockHearbeat;
+import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -57,12 +58,12 @@ public class BlockClaimerListener implements Listener {
 
         if (SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
             SaveUtil.disableLocking(e.getClickedBlock().getLocation());
-            e.getPlayer().sendMessage("§a§lБлок больше нельзя заблокировать!");
+            e.getPlayer().sendMessage(Messages.get("lockable.now_not_lockable"));
         } else if (!SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
             SaveUtil.enableLocking(e.getClickedBlock().getLocation());
-            e.getPlayer().sendMessage("§a§lТеперь блок можно заблокировать!");
+            e.getPlayer().sendMessage(Messages.get("lockable.now_lockable"));
         } else {
-            e.getPlayer().sendMessage("§c§lЭтот блок в данный момент заблокирован!");
+            e.getPlayer().sendMessage(Messages.get("lockable.currently_locked"));
         }
     }
 

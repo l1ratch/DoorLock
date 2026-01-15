@@ -6,6 +6,8 @@ import dev.jones.doorlock.listener.DebugListener;
 import dev.jones.doorlock.listener.KeyListener;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.ItemStackBuilder;
+import dev.jones.doorlock.util.Messages;
+import dev.jones.doorlock.util.SaveUtil;
 import dev.jones.doorlock.util.Updater;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -30,7 +32,7 @@ public final class Doorlock extends JavaPlugin {
     private static List<NamespacedKey> recipes=new ArrayList<>();
     private static File file;
     private static final boolean DEBUG=false;
-    long updateCheckSetting = this.getConfig().getLong("update", 0);
+    private boolean updateCheckSetting;
     @Override
     public void onEnable() {
         /*
@@ -52,22 +54,26 @@ public final class Doorlock extends JavaPlugin {
 
         for (String key : defaultConfig.getKeys(true)) {
             if (!getConfig().contains(key, true)) {
-                getLogger().warning("Путь к конфигурации " + key + " отсутствует! Добавляем.");
+                getLogger().warning(String.format(Messages.get("config.missing_path"), key));
                 getConfig().set(key, defaultConfig.get(key));
             }
         }
         saveConfig();
+        updateCheckSetting = this.getConfig().getBoolean("update", true);
+
+        SaveUtil.init();
+        Messages.init();
         /*
         Scan for updates
          */
-        // Если проверка обновлений ВКЛЮЧЕНА (update != 0), то выполняем проверку
-        if (updateCheckSetting != 0) {
+        // Если проверка обновлений ВКЛЮЧЕНА, то выполняем проверку
+        if (updateCheckSetting) {
             if (Updater.fetchUpdates()) {
-                getLogger().info("Доступно обновление плагина!");
+                getLogger().info(Messages.get("updater.available"));
                 // Дополнительные действия при обнаружении обновлений (если нужно)
-            } else getLogger().info("У вас установлена актуальная версия плагина!");
-        } else getLogger().info("Проверка обновлений выключена!");
-        // Если update = 0, то ничего не делаем — проверки нет
+            } else getLogger().info(Messages.get("updater.up_to_date"));
+        } else getLogger().info(Messages.get("updater.check_disabled"));
+        // Если update = false, то ничего не делаем — проверки нет
         /*
         Register Generic Commands
          */
@@ -88,8 +94,8 @@ public final class Doorlock extends JavaPlugin {
         Register Key
          */
         ItemStack keyItem=new ItemStackBuilder(Material.GOLD_NUGGET)
-                .setName("§a§lКлюч")
-                .setLore("§7Запирает двери.","§7(нажмите и удерживайте Shift, чтобы разблокировать)")
+                .setName(Messages.get("item.key.name"))
+                .setLore(Messages.get("item.key.lore1"),Messages.get("item.key.lore2"))
                 .addNbtTag("iskey","1")
                 .setCustomModelData(9999101)
                 .build();
@@ -110,8 +116,8 @@ public final class Doorlock extends JavaPlugin {
         Register BlockLocker
          */
         ItemStack blockClaimerItem=new ItemStackBuilder(Material.IRON_AXE)
-                .setName("§a§lБлокировщик блоков")
-                .setLore("§7Делает блоки запираемыми с помощью ключей.")
+                .setName(Messages.get("item.blocklocker.name"))
+                .setLore(Messages.get("item.blocklocker.lore1"))
                 .addNbtTag("isblocklocker","1")
                 .setCustomModelData(9999102)
                 .build();
@@ -138,8 +144,8 @@ public final class Doorlock extends JavaPlugin {
         Register Doordrill
          */
         ItemStack doorDrillItem=new ItemStackBuilder(Material.DIAMOND_AXE)
-                .setName("§a§lРазблокировщик")
-                .setLore("§7Может разблокировать запертые двери")
+                .setName(Messages.get("item.doordrill.name"))
+                .setLore(Messages.get("item.doordrill.lore1"))
                 .addNbtTag("isdoordrill","1")
                 .setCustomModelData(9999103)
                 .build();
@@ -166,15 +172,15 @@ public final class Doorlock extends JavaPlugin {
 
         DoorlockHearbeat.start();
 
-        getLogger().info("§eDoorLock §aуспешно запущен на вашем сервере!");
-        getLogger().info("§6Обновил и перевел плагин: l1ratch");
+        getLogger().info(Messages.get("plugin.enabled"));
+        getLogger().info(Messages.get("plugin.enabled.translated_by"));
     }
 
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
         this.getServer().resetRecipes();
-        // Updater.pluginDisabled();
+        SaveUtil.shutdown();
     }
 
     public static Plugin getInstance() {

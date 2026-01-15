@@ -20,4 +20,8 @@ commands:
     permission: doorlock.unlock
     permission-message: §cВам запрещено использовать эту команду!
     usage: §cИспользуйте /unlock без аргументов
+permissions:
+  doorlock.bypass:
+    description: Позволяет игнорировать блокировку дверей и блоков Doorlock
+    default: false
 

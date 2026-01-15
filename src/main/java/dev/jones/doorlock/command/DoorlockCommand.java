@@ -1,6 +1,7 @@
 package dev.jones.doorlock.command;
 
 import dev.jones.doorlock.Doorlock;
+import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
 import dev.jones.doorlock.util.Updater;
 import org.bukkit.Bukkit;
@@ -16,25 +17,25 @@ public class DoorlockCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length==1){
             if(args[0].equalsIgnoreCase("version")){
-                sender.sendMessage("§cНа этом сервере установлен Doorlock от _joones");
-                sender.sendMessage("§7Версия плагина: "+ SaveUtil.getVersion());
-                sender.sendMessage("§6Обновил и перевел плагин: l1ratch");
+                sender.sendMessage(Messages.get("doorlock.version.header"));
+                sender.sendMessage(Messages.format("doorlock.version.value", SaveUtil.getVersion()));
+                sender.sendMessage(Messages.get("doorlock.version.translated_by"));
                 return true;
             }else if(args[0].equalsIgnoreCase("help")){
-                sender.sendMessage("§6Плагин DoorLock от _joones (https://github.com/SJones-BWGY/DoorLock)");
-                sender.sendMessage("§6Обновил и перевел на русский язык: l1ratch (https://github.com/l1ratch)");
-                sender.sendMessage("§6Spigot официального плагина: https://www.spigotmc.org/resources/doorlock.96169");
-                sender.sendMessage("§6Страница моего форка плагина: --");
+                sender.sendMessage(Messages.get("doorlock.help.line1"));
+                sender.sendMessage(Messages.get("doorlock.help.line2"));
+                sender.sendMessage(Messages.get("doorlock.help.line3"));
+                sender.sendMessage(Messages.get("doorlock.help.line4"));
                 Updater.fetchUpdates();
                 return true;
             }else if(args[0].equalsIgnoreCase("update")){
-                sender.sendMessage("§cПроверяю наличие обновлений...");
-                sender.sendMessage("§7Дополнительную информацию можно найти в консоли.");
+                sender.sendMessage(Messages.get("doorlock.update.checking"));
+                sender.sendMessage(Messages.get("doorlock.update.console_info"));
                 Updater.fetchUpdates();
                 return true;
             }else if(args[0].equalsIgnoreCase("reload")){
-                sender.sendMessage("§cПерезагружаем плагин...");
-                sender.sendMessage("§7Это может занять некоторое время.");
+                sender.sendMessage(Messages.get("doorlock.reload.start"));
+                sender.sendMessage(Messages.get("doorlock.reload.may_take_time"));
                 Bukkit.getScheduler().scheduleSyncDelayedTask(Doorlock.getInstance(),()->{
                     Doorlock.getInstance().getServer().resetRecipes();
                     Doorlock.getInstance().onEnable();

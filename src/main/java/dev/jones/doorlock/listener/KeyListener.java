@@ -6,6 +6,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import dev.jones.doorlock.Doorlock;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.ItemStackBuilder;
+import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -56,6 +57,9 @@ public class KeyListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
+        if (e.getPlayer().hasPermission("doorlock.bypass")) {
+            return;
+        }
         if (timeout.contains(e.getPlayer())) return;
         timeout.add(e.getPlayer());
         DoorlockHearbeat.queueRunnable(() -> timeout.remove(e.getPlayer()));
@@ -95,7 +99,7 @@ public class KeyListener implements Listener {
                 if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
                     e.setCancelled(false);
                 } else {
-                    e.getPlayer().sendMessage("§cС помощью этого предмета вы не сможете взаимодействовать с заблокированными блоками.");
+                    e.getPlayer().sendMessage(Messages.get("item.door_drill.cannot_interact"));
                 }
                 return;
             }
@@ -104,12 +108,12 @@ public class KeyListener implements Listener {
         // --- если дверь еще не имеет ключа и у игрока есть ключ ---
         if (SaveUtil.getKey(door) == null && !key.equals("missing")) {
             if (!hasRegionAccess(e.getPlayer(), door)) {
-                e.getPlayer().sendMessage("§cВы не владеете этим регионом или у вас нет прав на строительство здесь!");
+                e.getPlayer().sendMessage(Messages.get("region.no_build"));
                 e.setCancelled(true);
                 return;
             }
             SaveUtil.lockDoor(key, door);
-            e.getPlayer().sendMessage("§aБлок заблокирован.");
+            e.getPlayer().sendMessage(Messages.get("door.locked"));
             e.setCancelled(true);
             return;
         }
@@ -122,7 +126,7 @@ public class KeyListener implements Listener {
 
         if (e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) {
             if (locked) {
-                e.getPlayer().sendMessage("§cЧтобы взаимодействовать с этим блоком, вам нужен правильный ключ!");
+                e.getPlayer().sendMessage(Messages.get("door.need_key"));
             }
             return;
         }
@@ -132,16 +136,16 @@ public class KeyListener implements Listener {
             e.setCancelled(false);
             if (e.getPlayer().isSneaking() && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 SaveUtil.unlockDoor(door);
-                e.getPlayer().sendMessage("§aБлок разблокирован.");
+                e.getPlayer().sendMessage(Messages.get("door.unlocked"));
             }
         } else if (SaveUtil.getKey(door) == null && !key.equals("missing")) {
             SaveUtil.lockDoor(key, door);
-            e.getPlayer().sendMessage("§aБлок заблокирован.");
+            e.getPlayer().sendMessage(Messages.get("door.locked"));
             e.setCancelled(true);
         } else if (SaveUtil.getKey(door) == null) {
             // игнорируем, если блок без ключа
         } else {
-            e.getPlayer().sendMessage("§cЧтобы взаимодействовать с этим блоком, вам нужен правильный ключ!");
+            e.getPlayer().sendMessage(Messages.get("door.need_key"));
         }
     }
 
@@ -197,9 +201,12 @@ public class KeyListener implements Listener {
             }
         }
 
+        if (e.getPlayer().hasPermission("doorlock.bypass")) {
+            return;
+        }
         // Проверяем доступ к региону
         if(!hasRegionAccess(e.getPlayer(), door)) {
-            e.getPlayer().sendMessage("§cВы не можете снять защиту с этого блока, так как не владеете регионом!");
+            e.getPlayer().sendMessage(Messages.get("region.cannot_remove_protection"));
             e.setCancelled(true);
             return;
         }

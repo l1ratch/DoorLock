@@ -7,79 +7,294 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.*;
 import java.util.List;
 
 public class SaveUtil {
-    private static File configFile;
-    private static FileConfiguration config;
-    public static void saveToConfig(){
-        configFile=new File(Doorlock.getInstance().getDataFolder(),"data.yml");
-        try {
-            if(configFile.createNewFile()){
-                Doorlock.getInstance().getLogger().warning("Файл с данными не существует!");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private static Connection connection;
 
-        if(config==null){
-            config=YamlConfiguration.loadConfiguration(configFile);
+    public static synchronized void init() {
+        if (connection != null) {
+            return;
         }
         try {
-            config.save(configFile);
-        } catch (IOException e) {
+            File dataFolder = Doorlock.getInstance().getDataFolder();
+            if (!dataFolder.exists()) {
+                dataFolder.mkdirs();
+            }
+            File dbFile = new File(dataFolder, "doorlock.db");
+            String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+            connection = DriverManager.getConnection(url);
+            connection.setAutoCommit(true);
+            createTables();
+            migrateFromYamlIfNeeded();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    public static void lockDoor(String key,Location loc){
-        saveToConfig();
-        List<String> list=config.getStringList("key."+key+".locations");
-        list.add(loc.getBlockX()+" "+loc.getBlockY()+" "+loc.getBlockZ());
-        config.set("key."+key+".locations",list);
-        saveToConfig();
-    }
-    public static void unlockDoor(Location door){
-        String key=getKey(door);
-        if(key==null)return;
-        List<String> list=config.getStringList("key."+key+".locations");
-        list.remove(door.getBlockX()+" "+door.getBlockY()+" "+door.getBlockZ());
-        config.set("key."+key+".locations",list);
-    }
-    public static String getKey(Location door){
-        saveToConfig();
-        if(config.getConfigurationSection("key")==null)return null;
-        for (String key : config.getConfigurationSection("key").getKeys(false)) {
-            if(config.getStringList("key."+key+".locations").contains(door.getBlockX()+" "+door.getBlockY()+" "+door.getBlockZ())){
-                return key;
+
+    public static synchronized void shutdown() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException ignored) {
             }
+            connection = null;
+        }
+    }
+
+    private static void createTables() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS keys (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "key_uuid TEXT NOT NULL UNIQUE" +
+                    ")");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS locked_doors (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "key_id INTEGER NOT NULL," +
+                    "world TEXT NOT NULL," +
+                    "x INTEGER NOT NULL," +
+                    "y INTEGER NOT NULL," +
+                    "z INTEGER NOT NULL," +
+                    "UNIQUE(world, x, y, z)," +
+                    "FOREIGN KEY(key_id) REFERENCES keys(id) ON DELETE CASCADE" +
+                    ")");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS lockable_blocks (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "world TEXT NOT NULL," +
+                    "x INTEGER NOT NULL," +
+                    "y INTEGER NOT NULL," +
+                    "z INTEGER NOT NULL," +
+                    "UNIQUE(world, x, y, z)" +
+                    ")");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS meta (" +
+                    "key TEXT PRIMARY KEY," +
+                    "value TEXT" +
+                    ")");
+        }
+    }
+
+    private static void migrateFromYamlIfNeeded() {
+        File legacyFile = new File(Doorlock.getInstance().getDataFolder(), "data.yml");
+        if (!legacyFile.exists()) {
+            return;
+        }
+        try {
+            if (getMeta("migrated") != null) {
+                return;
+            }
+            FileConfiguration legacyConfig = YamlConfiguration.loadConfiguration(legacyFile);
+            String defaultWorld = null;
+            if (!Doorlock.getInstance().getServer().getWorlds().isEmpty()) {
+                defaultWorld = Doorlock.getInstance().getServer().getWorlds().get(0).getName();
+            }
+            if (defaultWorld != null && legacyConfig.getConfigurationSection("key") != null) {
+                for (String key : legacyConfig.getConfigurationSection("key").getKeys(false)) {
+                    List<String> locations = legacyConfig.getStringList("key." + key + ".locations");
+                    for (String value : locations) {
+                        String[] split = value.split(" ");
+                        if (split.length != 3) {
+                            continue;
+                        }
+                        try {
+                            int x = Integer.parseInt(split[0]);
+                            int y = Integer.parseInt(split[1]);
+                            int z = Integer.parseInt(split[2]);
+                            insertLock(defaultWorld, x, y, z, key);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+            }
+            if (defaultWorld != null) {
+                List<String> lockable = legacyConfig.getStringList("lockable");
+                for (String value : lockable) {
+                    String[] split = value.split(" ");
+                    if (split.length != 3) {
+                        continue;
+                    }
+                    try {
+                        int x = Integer.parseInt(split[0]);
+                        int y = Integer.parseInt(split[1]);
+                        int z = Integer.parseInt(split[2]);
+                        insertLockable(defaultWorld, x, y, z);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+            String version = legacyConfig.getString("version");
+            if (version != null) {
+                setVersion(version);
+            }
+            setMeta("migrated", "true");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static int ensureKeyId(String key) throws SQLException {
+        try (PreparedStatement insert = connection.prepareStatement("INSERT OR IGNORE INTO keys(key_uuid) VALUES (?)")) {
+            insert.setString(1, key);
+            insert.executeUpdate();
+        }
+        try (PreparedStatement select = connection.prepareStatement("SELECT id FROM keys WHERE key_uuid = ?")) {
+            select.setString(1, key);
+            try (ResultSet rs = select.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        }
+        throw new SQLException("Failed to resolve key id");
+    }
+
+    private static void insertLock(String world, int x, int y, int z, String key) throws SQLException {
+        int keyId = ensureKeyId(key);
+        try (PreparedStatement statement = connection.prepareStatement("INSERT OR REPLACE INTO locked_doors(key_id, world, x, y, z) VALUES (?,?,?,?,?)")) {
+            statement.setInt(1, keyId);
+            statement.setString(2, world);
+            statement.setInt(3, x);
+            statement.setInt(4, y);
+            statement.setInt(5, z);
+            statement.executeUpdate();
+        }
+    }
+
+    private static void insertLockable(String world, int x, int y, int z) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("INSERT OR IGNORE INTO lockable_blocks(world, x, y, z) VALUES (?,?,?,?)")) {
+            statement.setString(1, world);
+            statement.setInt(2, x);
+            statement.setInt(3, y);
+            statement.setInt(4, z);
+            statement.executeUpdate();
+        }
+    }
+
+    public static synchronized void lockDoor(String key, Location loc) {
+        if (connection == null || loc == null || loc.getWorld() == null) {
+            return;
+        }
+        try {
+            insertLock(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), key);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static synchronized void unlockDoor(Location door) {
+        if (connection == null || door == null || door.getWorld() == null) {
+            return;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("DELETE FROM locked_doors WHERE world = ? AND x = ? AND y = ? AND z = ?")) {
+            statement.setString(1, door.getWorld().getName());
+            statement.setInt(2, door.getBlockX());
+            statement.setInt(3, door.getBlockY());
+            statement.setInt(4, door.getBlockZ());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static synchronized String getKey(Location door) {
+        if (connection == null || door == null || door.getWorld() == null) {
+            return null;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("SELECT k.key_uuid FROM locked_doors d JOIN keys k ON d.key_id = k.id WHERE d.world = ? AND d.x = ? AND d.y = ? AND d.z = ? LIMIT 1")) {
+            statement.setString(1, door.getWorld().getName());
+            statement.setInt(2, door.getBlockX());
+            statement.setInt(3, door.getBlockY());
+            statement.setInt(4, door.getBlockZ());
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("key_uuid");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
-    public static void enableLocking(Location location){
-        saveToConfig();
-        List<String> list=config.getStringList("lockable");
-        list.add(location.getBlockX()+" "+location.getBlockY()+" "+location.getBlockZ());
-        config.set("lockable",list);
-        saveToConfig();
-   }
-    public static void disableLocking(Location location){
-        saveToConfig();
-        List<String> list=config.getStringList("lockable");
-        list.remove(location.getBlockX()+" "+location.getBlockY()+" "+location.getBlockZ());
-        config.set("lockable",list);
-        saveToConfig();
+
+    public static synchronized void enableLocking(Location location) {
+        if (connection == null || location == null || location.getWorld() == null) {
+            return;
+        }
+        try {
+            insertLockable(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
-    public static boolean isLockable(Location location){
-        saveToConfig();
-        return config.getStringList("lockable").contains(location.getBlockX()+" "+location.getBlockY()+" "+location.getBlockZ());
+
+    public static synchronized void disableLocking(Location location) {
+        if (connection == null || location == null || location.getWorld() == null) {
+            return;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("DELETE FROM lockable_blocks WHERE world = ? AND x = ? AND y = ? AND z = ?")) {
+            statement.setString(1, location.getWorld().getName());
+            statement.setInt(2, location.getBlockX());
+            statement.setInt(3, location.getBlockY());
+            statement.setInt(4, location.getBlockZ());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
-    public static String getVersion(){
-        saveToConfig();
-        return config.getString("version");
+
+    public static synchronized boolean isLockable(Location location) {
+        if (connection == null || location == null || location.getWorld() == null) {
+            return false;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM lockable_blocks WHERE world = ? AND x = ? AND y = ? AND z = ? LIMIT 1")) {
+            statement.setString(1, location.getWorld().getName());
+            statement.setInt(2, location.getBlockX());
+            statement.setInt(3, location.getBlockY());
+            statement.setInt(4, location.getBlockZ());
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
-    public static void setVersion(String ver){
-        saveToConfig();
-        config.set("version",ver);
-        saveToConfig();
+
+    public static synchronized String getVersion() {
+        return getMeta("version");
+    }
+
+    public static synchronized void setVersion(String ver) {
+        setMeta("version", ver);
+    }
+
+    private static String getMeta(String key) {
+        if (connection == null) {
+            return null;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("SELECT value FROM meta WHERE key = ?")) {
+            statement.setString(1, key);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("value");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void setMeta(String key, String value) {
+        if (connection == null) {
+            return;
+        }
+        try (PreparedStatement statement = connection.prepareStatement("INSERT OR REPLACE INTO meta(key, value) VALUES (?,?)")) {
+            statement.setString(1, key);
+            statement.setString(2, value);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
