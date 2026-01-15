@@ -1,0 +1,65 @@
+prefix: '&eDoorLock &r'
+
+door.locked: '&aБлок заблокирован.'
+door.unlocked: '&aБлок разблокирован.'
+door.need_key: '&cЧтобы взаимодействовать с этим блоком, вам нужен правильный ключ!'
+door.not_locked: '&cЭтот блок не заблокирован!'
+door.look_at_block: '&cПожалуйста, посмотрите на блок, который вы хотите разблокировать.'
+door.look_at_door_or_locked: '&cПожалуйста, посмотрите на дверь или запертый блок!'
+
+region.no_build: '&cВы не владеете этим регионом или у вас нет прав на строительство здесь!'
+region.cannot_remove_protection: '&cВы не можете снять защиту с этого блока, так как не владеете регионом!'
+
+item.door_drill.cannot_interact: '&cС помощью этого предмета вы не сможете взаимодействовать с заблокированными блоками.'
+
+lockable.now_not_lockable: '&a&lБлок больше нельзя заблокировать!'
+lockable.now_lockable: '&a&lТеперь блок можно заблокировать!'
+lockable.currently_locked: '&c&lЭтот блок в данный момент заблокирован!'
+
+command.only_player: '&cЧтобы выполнить эту команду, вы должны быть игроком!'
+command.unlock.success: '&aБлок был разблокирован!'
+
+doorlock.version.header: '&cНа этом сервере установлен Doorlock от _joones'
+doorlock.version.value: '&7Версия плагина: %s'
+doorlock.version.translated_by: '&6Обновил и перевел плагин: l1ratch'
+
+doorlock.help.line1: '&6Плагин DoorLock от _joones (https://github.com/SJones-BWGY/DoorLock)'
+doorlock.help.line2: '&6Обновил и перевел на русский язык: l1ratch (https://github.com/l1ratch)'
+doorlock.help.line3: '&6Spigot официального плагина: https://www.spigotmc.org/resources/doorlock.96169'
+doorlock.help.line4: '&6Страница моего форка плагина: --'
+
+doorlock.update.checking: '&cПроверяю наличие обновлений...'
+doorlock.update.console_info: '&7Дополнительную информацию можно найти в консоли.'
+
+doorlock.reload.start: '&cПерезагружаем плагин...'
+doorlock.reload.may_take_time: '&7Это может занять некоторое время.'
+
+debug.command_removed: '&cЭта команда была удалена, так как не поддерживается в версии 1.14'
+debug.command_disabled: '&cВ настоящее время эта команда отключена.'
+
+plugin.enabled: '&eDoorLock &aуспешно запущен на вашем сервере!'
+plugin.enabled.translated_by: '&6Обновил и перевел плагин: l1ratch'
+
+updater.disabled: 'Функция проверки обновлений деактивирована!'
+updater.scanning: 'Scanning for updates...'
+updater.downloading: 'Downloading update...'
+updater.downloaded: 'Update downloaded. Installing...'
+updater.latest_installed: 'You plugin has the newest version installed!'
+updater.installed_reloading: 'Update installed. Reloading.'
+updater.failed: 'Update failed. Could not copy to jar!'
+updater.available: 'Доступно обновление плагина!'
+updater.up_to_date: 'У вас установлена актуальная версия плагина!'
+updater.check_disabled: 'Проверка обновлений выключена!'
+
+config.missing_path: 'Путь к конфигурации %s отсутствует! Добавляем.'
+
+item.key.name: '&a&lКлюч'
+item.key.lore1: '&7Запирает двери.'
+item.key.lore2: '&7(нажмите и удерживайте Shift, чтобы разблокировать)'
+
+item.blocklocker.name: '&a&lБлокировщик блоков'
+item.blocklocker.lore1: '&7Делает блоки запираемыми с помощью ключей.'
+
+item.doordrill.name: '&a&lРазблокировщик'
+item.doordrill.lore1: '&7Может разблокировать запертые двери'
+
