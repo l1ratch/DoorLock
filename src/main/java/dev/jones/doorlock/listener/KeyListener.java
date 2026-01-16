@@ -57,9 +57,6 @@ public class KeyListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-        if (e.getPlayer().hasPermission("doorlock.bypass")) {
-            return;
-        }
         if (timeout.contains(e.getPlayer())) return;
         timeout.add(e.getPlayer());
         DoorlockHearbeat.queueRunnable(() -> timeout.remove(e.getPlayer()));
@@ -87,6 +84,8 @@ public class KeyListener implements Listener {
 
         if (door == null) return;
 
+        boolean hasBypass = e.getPlayer().hasPermission("doorlock.bypass");
+
         // --- достаем key у игрока ---
         String key = "missing";
         if (e.getPlayer().getInventory().getItemInMainHand().hasItemMeta()) {
@@ -105,8 +104,10 @@ public class KeyListener implements Listener {
             }
         }
 
+        String storedKey = SaveUtil.getKey(door);
+
         // --- если дверь еще не имеет ключа и у игрока есть ключ ---
-        if (SaveUtil.getKey(door) == null && !key.equals("missing")) {
+        if (storedKey == null && !key.equals("missing")) {
             if (!hasRegionAccess(e.getPlayer(), door)) {
                 e.getPlayer().sendMessage(Messages.get("region.no_build"));
                 e.setCancelled(true);
@@ -118,35 +119,27 @@ public class KeyListener implements Listener {
             return;
         }
 
-        boolean locked = false;
-        if (SaveUtil.getKey(door) != null) {
-            e.setCancelled(true);
-            locked = true;
-        }
-
-        if (e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) {
-            if (locked) {
-                e.getPlayer().sendMessage(Messages.get("door.need_key"));
-            }
+        if (storedKey == null) {
             return;
         }
 
-        // --- проверка ключа ---
-        if (key.equals(SaveUtil.getKey(door))) {
+        // --- дверь заперта ---
+        if (key.equals(storedKey)) {
             e.setCancelled(false);
             if (e.getPlayer().isSneaking() && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 SaveUtil.unlockDoor(door);
                 e.getPlayer().sendMessage(Messages.get("door.unlocked"));
             }
-        } else if (SaveUtil.getKey(door) == null && !key.equals("missing")) {
-            SaveUtil.lockDoor(key, door);
-            e.getPlayer().sendMessage(Messages.get("door.locked"));
-            e.setCancelled(true);
-        } else if (SaveUtil.getKey(door) == null) {
-            // игнорируем, если блок без ключа
-        } else {
-            e.getPlayer().sendMessage(Messages.get("door.need_key"));
+            return;
         }
+
+        if (hasBypass) {
+            e.setCancelled(false);
+            return;
+        }
+
+        e.setCancelled(true);
+        e.getPlayer().sendMessage(Messages.get("door.need_key"));
     }
 
 

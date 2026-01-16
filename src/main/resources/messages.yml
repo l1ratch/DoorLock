@@ -22,6 +22,22 @@ item.blocklocker.lore1: '&7Используйте для блокировки б
 item.doordrill.name: '&bДверная дрель'
 item.doordrill.lore1: '&7Используйте для взлома дверей.'
 
+door.locked: '&aДверь заперта этим ключом.'
+door.unlocked: '&aЗамок на двери снят.'
+door.need_key: '&cДля этой двери нужен подходящий ключ!'
+door.look_at_block: '&cПосмотрите на блок, который нужно разблокировать.'
+door.look_at_door_or_locked: '&cПосмотрите на дверь или запертый блок.'
+door.not_locked: '&eЭтот блок не заперт.'
+
+lockable.now_not_lockable: '&eЭтот блок больше нельзя запирать.'
+lockable.now_lockable: '&aЭтот блок теперь можно запирать ключом.'
+lockable.currently_locked: '&cНельзя изменить статус: блок сейчас заперт.'
+
+region.no_build: '&cВы не можете запирать двери в этом регионе.'
+region.cannot_remove_protection: '&cВы не можете снять защиту в этом регионе.'
+
+item.door_drill.cannot_interact: '&cДверная дрель не подходит для обычного взаимодействия с блоками.'
+
 
 doorlock.help.line1: '&6DoorLock v%s от l1ratch'
 doorlock.help.line2: '&6Основано на коде: _joones'
