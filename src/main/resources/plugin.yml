@@ -2,26 +2,32 @@ name: Doorlock
 version: '${project.version}'
 main: dev.jones.doorlock.Doorlock
 api-version: '1.20'
-authors: [ _joones, l1ratch ]
-description: Запирайте двери на ключи.
+authors: [ l1ratch ]
+description: Продвинутая система блокировки дверей и блоков от l1ratch. (Основано на коде _joones)
+website: https://github.com/l1ratch/DoorLock
 softdepend: [WorldGuard]
 commands:
-  dldebug:
-    description: Команда отладки (предназначена только для разработчиков, может быть включена в классе Doorlock)
-    permission: doorlock.debug
-    permission-message: §cВам запрещено использовать эту команду!
   doorlock:
-    description: Можно использовать для перезагрузки плагина, проверки наличия обновлений или проверки версии плагина
-    permission: doorlock.manage
+    description: Основная команда плагина
+    permission: doorlock.use
     permission-message: §cВам запрещено использовать эту команду!
-    usage: §cИспользуйте /doorlock <version|help|update|reload>
-  unlock:
-    description: Открывает блок, на который вы смотрите.
-    permission: doorlock.unlock
-    permission-message: §cВам запрещено использовать эту команду!
-    usage: §cИспользуйте /unlock без аргументов
+    aliases: [dl]
+    usage: §cИспользуйте /doorlock help
 permissions:
+  doorlock.use:
+    description: Позволяет использовать базовые команды плагина
+    default: true
+  doorlock.admin:
+    description: Полный доступ ко всем функциям плагина
+    default: op
+    children:
+      doorlock.use: true
+      doorlock.unlock: true
+  doorlock.unlock:
+    description: Позволяет использовать команду разблокировки
+    default: op
   doorlock.bypass:
-    description: Позволяет игнорировать блокировку дверей и блоков Doorlock
+    description: Позволяет игнорировать блокировку дверей и блоков
     default: false
+
 

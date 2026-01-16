@@ -13,11 +13,15 @@ public class DoorlockCommandTabCompleter implements TabCompleter {
         List<String> l=new ArrayList<>();
         if(args.length==1){
             l.add("help");
-            l.add("version");
             l.add("update");
             l.add("reload");
+            if (sender.hasPermission("doorlock.unlock")) {
+                l.add("unlock");
+            }
             if (sender.hasPermission("doorlock.admin")) {
                 l.add("getkey");
+                l.add("getlocker");
+                l.add("getdrill");
                 l.add("info");
             }
         }

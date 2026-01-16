@@ -77,18 +77,8 @@ public final class Doorlock extends JavaPlugin {
         /*
         Register Generic Commands
          */
-        if(DEBUG) {
-            Bukkit.getPluginManager().registerEvents(new DebugListener(), this);
-            this.getCommand("dldebug").setExecutor(new DebugCommand());
-        }else{
-            this.getCommand("dldebug").setExecutor(new DisabledCommand());
-        }
-
         this.getCommand("doorlock").setExecutor(new DoorlockCommand());
         this.getCommand("doorlock").setTabCompleter(new DoorlockCommandTabCompleter());
-
-        this.getCommand("unlock").setExecutor(new UnlockCommand());
-        this.getCommand("unlock").setTabCompleter(new UnlockCommandTabCompleter());
 
         /*
         Register Key

@@ -6,7 +6,7 @@
 
     <groupId>dev.jones</groupId>
     <artifactId>doorlock</artifactId>
-    <version>v2.0</version>
+    <version>v2.1</version>
     <packaging>jar</packaging>
 
     <name>Doorlock</name>
