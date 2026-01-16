@@ -33,12 +33,13 @@ doorlock.update.console_info: '&7Дополнительную информаци
 
 doorlock.reload.start: '&cПерезагружаем плагин...'
 doorlock.reload.may_take_time: '&7Это может занять некоторое время.'
+doorlock.reload.success: '&aПлагин успешно перезагружен!'
 
 debug.command_removed: '&cЭта команда была удалена, так как не поддерживается в версии 1.14'
 debug.command_disabled: '&cВ настоящее время эта команда отключена.'
 
 plugin.enabled: '&eDoorLock &aуспешно запущен на вашем сервере!'
-plugin.enabled.translated_by: '&6Обновил и перевел плагин: l1ratch'
+plugin.translator: '&6Обновил и перевел плагин: l1ratch'
 
 updater.disabled: 'Функция проверки обновлений деактивирована!'
 updater.scanning: 'Scanning for updates...'

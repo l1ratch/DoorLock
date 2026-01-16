@@ -173,7 +173,7 @@ public final class Doorlock extends JavaPlugin {
         DoorlockHearbeat.start();
 
         getLogger().info(Messages.get("plugin.enabled"));
-        getLogger().info(Messages.get("plugin.enabled.translated_by"));
+        getLogger().info(Messages.get("plugin.translator"));
     }
 
     @Override

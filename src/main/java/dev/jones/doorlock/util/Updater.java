@@ -40,7 +40,13 @@ public class Updater {
             if (pluginVersion == null || !pluginVersion.equals(currentVersion)) {
                 Doorlock.getInstance().getLogger().info(Messages.get("updater.downloading"));
                 URL dl = new URL(obj.getJSONArray("assets").getJSONObject(0).getString("browser_download_url"));
-                file=new File(Doorlock.getJarfile().getParentFile(),Doorlock.getJarfile().getName()+".new");
+                
+                File updateFolder = Bukkit.getUpdateFolderFile();
+                if (!updateFolder.exists()) {
+                    updateFolder.mkdirs();
+                }
+                
+                file = new File(updateFolder, Doorlock.getJarfile().getName());
                 file.createNewFile();
                 try (BufferedInputStream in = new BufferedInputStream(dl.openStream());
                      FileOutputStream fileOutputStream = new FileOutputStream(file)) {
@@ -60,6 +66,9 @@ public class Updater {
             }else{
                 Doorlock.getInstance().getLogger().info(Messages.get("updater.latest_installed"));
             }
+        } catch (FileNotFoundException e) {
+            Doorlock.getInstance().getLogger().warning("Update check failed: Release not found (404). This is expected if no releases exist yet.");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

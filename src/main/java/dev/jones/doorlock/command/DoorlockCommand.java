@@ -36,11 +36,15 @@ public class DoorlockCommand implements CommandExecutor {
             }else if(args[0].equalsIgnoreCase("reload")){
                 sender.sendMessage(Messages.get("doorlock.reload.start"));
                 sender.sendMessage(Messages.get("doorlock.reload.may_take_time"));
-                Bukkit.getScheduler().scheduleSyncDelayedTask(Doorlock.getInstance(),()->{
-                    Doorlock.getInstance().getServer().resetRecipes();
-                    Doorlock.getInstance().onEnable();
-                },1);
+                
+                Doorlock.getInstance().reloadConfig();
+                Messages.init();
+                
+                if (Doorlock.getInstance().getConfig().getBoolean("update", true)) {
+                    Updater.fetchUpdates();
+                }
 
+                sender.sendMessage(Messages.get("doorlock.reload.success"));
                 return true;
             }
         }

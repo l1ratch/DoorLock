@@ -18,6 +18,7 @@ public class SaveUtil {
             return;
         }
         try {
+            Class.forName("org.sqlite.JDBC");
             File dataFolder = Doorlock.getInstance().getDataFolder();
             if (!dataFolder.exists()) {
                 dataFolder.mkdirs();
@@ -28,7 +29,9 @@ public class SaveUtil {
             connection.setAutoCommit(true);
             createTables();
             migrateFromYamlIfNeeded();
-        } catch (SQLException e) {
+            Doorlock.getInstance().getLogger().info("Database connected successfully.");
+        } catch (ClassNotFoundException | SQLException e) {
+            Doorlock.getInstance().getLogger().severe("Failed to connect to database!");
             e.printStackTrace();
         }
     }

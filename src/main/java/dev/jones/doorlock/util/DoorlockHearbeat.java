@@ -15,7 +15,11 @@ public class DoorlockHearbeat {
                 while (true){
                     Runnable runnable = queue.poll();
                     if(runnable==null)break;
-                    runnable.run();
+                    try {
+                        runnable.run();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         },0,1);
