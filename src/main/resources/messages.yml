@@ -18,6 +18,16 @@ lockable.currently_locked: '&c&lЭтот блок в данный момент �
 
 command.only_player: '&cЧтобы выполнить эту команду, вы должны быть игроком!'
 command.unlock.success: '&aБлок был разблокирован!'
+command.no_permission: '&cУ вас нет прав на выполнение этой команды!'
+command.getkey.success: '&aВыдан ключ с ID: &e%s'
+command.info.header: '&e=== Информация о DoorLock ==='
+command.info.db_stats: '&7БД: &e%d &7ключей, &e%d &7замков'
+command.info.migration: '&7Статус миграции: &e%s'
+command.info.target_block: '&7Целевой блок: &e%s'
+command.info.key_id: '&7ID ключа замка: &e%s'
+command.info.no_key: '&7Замок не установлен.'
+command.info.item_key: '&7ID ключа в руке: &e%s'
+command.info.not_lockable: '&7Этот блок нельзя запереть.'
 
 doorlock.version.header: '&cНа этом сервере установлен Doorlock от _joones'
 doorlock.version.value: '&7Версия плагина: %s'

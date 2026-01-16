@@ -288,6 +288,36 @@ public class SaveUtil {
         return null;
     }
 
+    public static synchronized int getKeysCount() {
+        if (connection == null) return 0;
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM keys")) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static synchronized int getLocksCount() {
+        if (connection == null) return 0;
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery("SELECT COUNT(*) FROM locked_doors")) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static synchronized boolean isMigrated() {
+        return "true".equals(getMeta("migrated"));
+    }
+
     private static void setMeta(String key, String value) {
         if (connection == null) {
             return;

@@ -16,6 +16,10 @@ public class DoorlockCommandTabCompleter implements TabCompleter {
             l.add("version");
             l.add("update");
             l.add("reload");
+            if (sender.hasPermission("doorlock.admin")) {
+                l.add("getkey");
+                l.add("info");
+            }
         }
         return l;
     }
