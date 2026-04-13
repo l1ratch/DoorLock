@@ -1,24 +1,29 @@
 command.only_player: '&cЧтобы выполнить эту команду, вы должны быть игроком!'
 command.unlock.success: '&aБлок был разблокирован!'
 command.no_permission: '&cУ вас нет прав на выполнение этой команды!'
-command.getkey.success: '&aВыдан ключ с ID: &e%s'
+command.getkey.success: '&aКлюч выдан с ID: &e%s'
 command.getkey.invalid_uuid: '&cНеверный формат UUID!'
-command.getlocker.success: '&aВыдан блокиратор блоков!'
-command.getdrill.success: '&aВыдана дверная дрель!'
+command.getlocker.success: '&aБлокиратор блоков выдан!'
+command.getdrill.success: '&aДверная дрель выдана!'
 command.info.header: '&e=== Информация о DoorLock ==='
-command.info.db_stats: '&7БД: &e%d &7ключей, &e%d &7замков'
+command.info.db_stats: '&7База данных: &e%d &7ключей, &e%d &7замков'
 command.info.migration: '&7Статус миграции: &e%s'
 command.info.target_block: '&7Целевой блок: &e%s'
 command.info.key_id: '&7ID ключа замка: &e%s'
-command.info.no_key: '&7Замок не установлен.'
+command.info.no_key: '&7Блок не заперт.'
 command.info.item_key: '&7ID ключа в руке: &e%s'
 command.info.not_lockable: '&7Этот блок нельзя запереть.'
+
+config.missing_path: '&eОтсутствует путь в config.yml: &6%s&e. Используется значение по умолчанию.'
+
+worldguard.strict_blocked: '&cЗащита WorldGuard сейчас недоступна или сломана. Действие отменено для безопасности.'
+worldguard.optional_disabled: '&eWorldGuard недоступен, поэтому проверки региона пропущены по настройке плагина.'
 
 item.key.name: '&6Ключ'
 item.key.lore1: '&7Используйте этот ключ, чтобы'
 item.key.lore2: '&7открыть или закрыть дверь.'
 item.blocklocker.name: '&cБлокиратор блоков'
-item.blocklocker.lore1: '&7Используйте для блокировки блоков.'
+item.blocklocker.lore1: '&7Используйте для переключения режима запирания блоков.'
 item.doordrill.name: '&bДверная дрель'
 item.doordrill.lore1: '&7Используйте для взлома дверей.'
 
@@ -30,7 +35,7 @@ door.look_at_door_or_locked: '&cПосмотрите на дверь или за
 door.not_locked: '&eЭтот блок не заперт.'
 
 lockable.now_not_lockable: '&eЭтот блок больше нельзя запирать.'
-lockable.now_lockable: '&aЭтот блок теперь можно запирать ключом.'
+lockable.now_lockable: '&aТеперь этот блок можно запирать ключом.'
 lockable.currently_locked: '&cНельзя изменить статус: блок сейчас заперт.'
 
 region.no_build: '&cВы не можете запирать двери в этом регионе.'
@@ -38,9 +43,8 @@ region.cannot_remove_protection: '&cВы не можете снять защит
 
 item.door_drill.cannot_interact: '&cДверная дрель не подходит для обычного взаимодействия с блоками.'
 
-
 doorlock.help.line1: '&6DoorLock v%s от l1ratch'
-doorlock.help.line2: '&6Основано на коде: _joones'
+doorlock.help.line2: '&6Основано на коде _joones'
 doorlock.help.line3: '&6Команды:'
 doorlock.help.line4: '&e/dl unlock &7- разблокировать блок'
 doorlock.help.line5: '&e/dl info &7- информация о блоке/ключе'
@@ -60,17 +64,13 @@ doorlock.reload.start: '&cПерезагружаем плагин...'
 doorlock.reload.may_take_time: '&7Это может занять некоторое время.'
 doorlock.reload.success: '&aПлагин успешно перезагружен!'
 
-debug.command_removed: '&cЭта команда была удалена, так как не поддерживается в версии 1.14'
+debug.command_removed: '&cЭта команда была удалена, так как не поддерживается в 1.14'
 debug.command_disabled: '&cВ настоящее время эта команда отключена.'
 
 plugin.enabled: '&eDoorLock &aуспешно запущен на вашем сервере!'
-plugin.translator: '&6Обновил и перевел плагин: l1ratch'
+plugin.translator: '&6Перевёл и обновил: l1ratch'
 
-updater.disabled: 'Функция проверки обновлений деактивирована!'
-updater.scanning: 'Scanning for updates...'
-updater.downloading: 'Downloading update...'
-updater.downloaded: 'Update downloaded. Installing...'
-updater.latest_installed: 'You plugin has the newest version installed!'
-updater.installed_reloading: 'Update installed. Reloading.'
-updater.failed: 'Update failed. Could not copy to jar!'
+updater.disabled: 'Проверка обновлений отключена!'
+updater.scanning: 'Проверяю обновления...'
+updater.latest_installed: 'У вас установлена последняя версия!'
 updater.available: 'Доступно обновление плагина!'

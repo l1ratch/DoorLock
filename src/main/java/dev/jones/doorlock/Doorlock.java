@@ -2,12 +2,12 @@ package dev.jones.doorlock;
 
 import dev.jones.doorlock.command.*;
 import dev.jones.doorlock.listener.BlockClaimerListener;
-import dev.jones.doorlock.listener.DebugListener;
 import dev.jones.doorlock.listener.KeyListener;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.ItemStackBuilder;
 import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
+import dev.jones.doorlock.util.WorldGuardSupport;
 import dev.jones.doorlock.util.Updater;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -16,7 +16,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -30,7 +29,6 @@ import java.util.List;
 public final class Doorlock extends JavaPlugin {
     private static Plugin instance;
     private static List<NamespacedKey> recipes=new ArrayList<>();
-    private static File file;
     private static final boolean DEBUG=false;
     private boolean updateCheckSetting;
     @Override
@@ -39,7 +37,6 @@ public final class Doorlock extends JavaPlugin {
         Initialize Variables
          */
         instance=this;
-        file=this.getFile();
         /*
         Load config
          */
@@ -63,6 +60,8 @@ public final class Doorlock extends JavaPlugin {
 
         SaveUtil.init();
         Messages.init();
+        WorldGuardSupport.reload();
+        WorldGuardSupport.logStartupState();
         /*
         Scan for updates
          */
@@ -169,15 +168,17 @@ public final class Doorlock extends JavaPlugin {
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
-        this.getServer().resetRecipes();
+        for (NamespacedKey recipe : recipes) {
+            Bukkit.removeRecipe(recipe);
+        }
+        recipes.clear();
+        DoorlockHearbeat.stop();
         SaveUtil.shutdown();
     }
 
     public static Plugin getInstance() {
         return instance;
     }
-    public static File getJarfile(){return file;}
-
     public static List<NamespacedKey> getRecipes() {
         return recipes;
     }

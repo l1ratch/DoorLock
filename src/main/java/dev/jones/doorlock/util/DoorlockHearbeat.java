@@ -25,7 +25,10 @@ public class DoorlockHearbeat {
         },0,1);
     }
     public static void stop(){
-        Bukkit.getScheduler().cancelTask(task);
+        if (task != -1) {
+            Bukkit.getScheduler().cancelTask(task);
+            task = -1;
+        }
     }
     public static void queueRunnable(Runnable r){
         queue.add(r);

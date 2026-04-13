@@ -1,14 +1,12 @@
 package dev.jones.doorlock.listener;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import dev.jones.doorlock.Doorlock;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.ItemStackBuilder;
 import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
-import org.bukkit.Bukkit;
+import dev.jones.doorlock.util.WorldGuardChecks;
+import dev.jones.doorlock.util.WorldGuardSupport;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.data.Bisected;
@@ -25,13 +23,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
-import com.sk89q.worldguard.protection.regions.RegionQuery;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +75,11 @@ public class KeyListener implements Listener {
 
         if (door == null) return;
 
+        if (WorldGuardSupport.denyIfStrictUnavailable(e.getPlayer(), "door interaction")) {
+            e.setCancelled(true);
+            return;
+        }
+
         boolean hasBypass = e.getPlayer().hasPermission("doorlock.bypass");
 
         // --- достаем key у игрока ---
@@ -108,7 +104,8 @@ public class KeyListener implements Listener {
 
         // --- если дверь еще не имеет ключа и у игрока есть ключ ---
         if (storedKey == null && !key.equals("missing")) {
-            if (!hasRegionAccess(e.getPlayer(), door)) {
+            Boolean access = checkWorldGuardAccess(e.getPlayer(), door, "lock door");
+            if (Boolean.FALSE.equals(access)) {
                 e.getPlayer().sendMessage(Messages.get("region.no_build"));
                 e.setCancelled(true);
                 return;
@@ -140,26 +137,6 @@ public class KeyListener implements Listener {
 
         e.setCancelled(true);
         e.getPlayer().sendMessage(Messages.get("door.need_key"));
-    }
-
-
-    private boolean hasRegionAccess(Player player, Location location) {
-        try {
-            RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            RegionQuery query = container.createQuery();
-            ApplicableRegionSet regions = query.getApplicableRegions(BukkitAdapter.adapt(location));
-
-            LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
-
-            // проверка bypass
-            if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(localPlayer, localPlayer.getWorld())) {
-                return regions.testState(localPlayer, Flags.BUILD);
-            }
-            return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return true; // fallback: разрешить
-        }
     }
 
     @EventHandler
@@ -194,11 +171,16 @@ public class KeyListener implements Listener {
             }
         }
 
+        if (WorldGuardSupport.denyIfStrictUnavailable(e.getPlayer(), "block protection removal")) {
+            e.setCancelled(true);
+            return;
+        }
+
         if (e.getPlayer().hasPermission("doorlock.bypass")) {
             return;
         }
-        // Проверяем доступ к региону
-        if(!hasRegionAccess(e.getPlayer(), door)) {
+        Boolean access = checkWorldGuardAccess(e.getPlayer(), door, "remove protection");
+        if (Boolean.FALSE.equals(access)) {
             e.getPlayer().sendMessage(Messages.get("region.cannot_remove_protection"));
             e.setCancelled(true);
             return;
@@ -207,5 +189,18 @@ public class KeyListener implements Listener {
         SaveUtil.unlockDoor(door);
         SaveUtil.disableLocking(door);
 
+    }
+
+    private Boolean checkWorldGuardAccess(Player player, Location location, String action) {
+        if (WorldGuardSupport.shouldSkipChecks()) {
+            return null;
+        }
+
+        try {
+            return WorldGuardChecks.canBuild(player, location);
+        } catch (Exception ex) {
+            boolean deny = WorldGuardSupport.handleFailure(player, action, ex);
+            return deny ? Boolean.FALSE : null;
+        }
     }
 }

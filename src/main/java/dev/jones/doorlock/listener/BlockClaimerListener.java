@@ -4,8 +4,11 @@ import dev.jones.doorlock.Doorlock;
 import dev.jones.doorlock.util.DoorlockHearbeat;
 import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
+import dev.jones.doorlock.util.WorldGuardChecks;
+import dev.jones.doorlock.util.WorldGuardSupport;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -54,16 +57,42 @@ public class BlockClaimerListener implements Listener {
         timeout.add(e.getPlayer());
         DoorlockHearbeat.queueRunnable(() -> timeout.remove(e.getPlayer()));
 
+        Location clicked = e.getClickedBlock().getLocation();
+        if (WorldGuardSupport.denyIfStrictUnavailable(e.getPlayer(), "block locker interaction")) {
+            e.setCancelled(true);
+            return;
+        }
+
+        Boolean access = checkWorldGuardAccess(e.getPlayer(), clicked, "toggle lockable state");
+        if (Boolean.FALSE.equals(access)) {
+            e.getPlayer().sendMessage(Messages.get("region.no_build"));
+            e.setCancelled(true);
+            return;
+        }
+
         e.setCancelled(true);
 
-        if (SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
-            SaveUtil.disableLocking(e.getClickedBlock().getLocation());
+        if (SaveUtil.isLockable(clicked) && SaveUtil.getKey(clicked) == null) {
+            SaveUtil.disableLocking(clicked);
             e.getPlayer().sendMessage(Messages.get("lockable.now_not_lockable"));
-        } else if (!SaveUtil.isLockable(e.getClickedBlock().getLocation()) && SaveUtil.getKey(e.getClickedBlock().getLocation()) == null) {
-            SaveUtil.enableLocking(e.getClickedBlock().getLocation());
+        } else if (!SaveUtil.isLockable(clicked) && SaveUtil.getKey(clicked) == null) {
+            SaveUtil.enableLocking(clicked);
             e.getPlayer().sendMessage(Messages.get("lockable.now_lockable"));
         } else {
             e.getPlayer().sendMessage(Messages.get("lockable.currently_locked"));
+        }
+    }
+
+    private Boolean checkWorldGuardAccess(Player player, Location location, String action) {
+        if (WorldGuardSupport.shouldSkipChecks()) {
+            return null;
+        }
+
+        try {
+            return WorldGuardChecks.canBuild(player, location);
+        } catch (Exception ex) {
+            boolean deny = WorldGuardSupport.handleFailure(player, action, ex);
+            return deny ? Boolean.FALSE : null;
         }
     }
 

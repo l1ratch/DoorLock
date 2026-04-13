@@ -6,8 +6,18 @@
 # false = Отключить проверку обновлений
 update: true
 
+# Language file name inside /lang without extension, for example: en, ru.
+language: en
+
 # Включение и отключение элементов (true = включено; false = отключено)
 items:
     key: true # CustomModelData: 9999101
     blocklocker: true # CustomModelData: 9999102
     doordrill: true # CustomModelData: 9999103
+
+# WorldGuard integration mode:
+# OFF      = never use WorldGuard checks
+# AUTO     = use WorldGuard if available, otherwise skip those checks
+# REQUIRED = fail closed if WorldGuard is missing or broken
+worldguard:
+  mode: AUTO

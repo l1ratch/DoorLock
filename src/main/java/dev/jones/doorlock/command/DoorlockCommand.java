@@ -5,6 +5,7 @@ import dev.jones.doorlock.util.ItemStackBuilder;
 import dev.jones.doorlock.util.Messages;
 import dev.jones.doorlock.util.SaveUtil;
 import dev.jones.doorlock.util.Updater;
+import dev.jones.doorlock.util.WorldGuardSupport;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -73,6 +74,8 @@ public class DoorlockCommand implements CommandExecutor {
             
             Doorlock.getInstance().reloadConfig();
             Messages.init();
+            WorldGuardSupport.reload();
+            WorldGuardSupport.logStartupState();
             
             if (Doorlock.getInstance().getConfig().getBoolean("update", true)) {
                 Updater.fetchUpdates();
@@ -282,7 +285,7 @@ public class DoorlockCommand implements CommandExecutor {
 
         TextComponent keyComp = new TextComponent(key);
         // We assume the color comes from prefix, but let's force Yellow if it was intended to be emphasized.
-        // In messages.yml it's usually "&e%s". The prefix will end with &e.
+        // In lang/*.yml it's usually "&e%s". Keep message keys in both en.yml and ru.yml in sync.
         // However, fromLegacyText might close colors.
         // Let's rely on Last Colors of prefix?
         // Actually, explicit color is safer if we know it should be yellow.

@@ -88,50 +88,72 @@ public class SaveUtil {
             }
             FileConfiguration legacyConfig = YamlConfiguration.loadConfiguration(legacyFile);
             String defaultWorld = null;
-            if (!Doorlock.getInstance().getServer().getWorlds().isEmpty()) {
+            if (Doorlock.getInstance().getServer().getWorlds().size() == 1) {
                 defaultWorld = Doorlock.getInstance().getServer().getWorlds().get(0).getName();
             }
-            if (defaultWorld != null && legacyConfig.getConfigurationSection("key") != null) {
+
+            boolean hasLegacyKeys = legacyConfig.getConfigurationSection("key") != null;
+            boolean hasLegacyLockable = !legacyConfig.getStringList("lockable").isEmpty();
+            if (defaultWorld == null && (hasLegacyKeys || hasLegacyLockable)) {
+                Doorlock.getInstance().getLogger().warning("Legacy DoorLock data was found, but the world cannot be resolved safely on a multi-world server. Migration was skipped to avoid assigning locks to the wrong world.");
+                return;
+            }
+
+            if (defaultWorld != null && hasLegacyKeys) {
                 for (String key : legacyConfig.getConfigurationSection("key").getKeys(false)) {
+                    String explicitWorld = legacyConfig.getString("key." + key + ".world");
                     List<String> locations = legacyConfig.getStringList("key." + key + ".locations");
                     for (String value : locations) {
-                        String[] split = value.split(" ");
-                        if (split.length != 3) {
-                            continue;
-                        }
-                        try {
-                            int x = Integer.parseInt(split[0]);
-                            int y = Integer.parseInt(split[1]);
-                            int z = Integer.parseInt(split[2]);
-                            insertLock(defaultWorld, x, y, z, key);
-                        } catch (NumberFormatException ignored) {
-                        }
+                        migrateLegacyLocation(value, explicitWorld, defaultWorld, key, true);
                     }
                 }
             }
             if (defaultWorld != null) {
                 List<String> lockable = legacyConfig.getStringList("lockable");
                 for (String value : lockable) {
-                    String[] split = value.split(" ");
-                    if (split.length != 3) {
-                        continue;
-                    }
-                    try {
-                        int x = Integer.parseInt(split[0]);
-                        int y = Integer.parseInt(split[1]);
-                        int z = Integer.parseInt(split[2]);
-                        insertLockable(defaultWorld, x, y, z);
-                    } catch (NumberFormatException ignored) {
-                    }
+                    migrateLegacyLocation(value, null, defaultWorld, null, false);
                 }
-            }
-            String version = legacyConfig.getString("version");
-            if (version != null) {
-                setVersion(version);
             }
             setMeta("migrated", "true");
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void migrateLegacyLocation(String value, String explicitWorld, String fallbackWorld, String key, boolean lock) throws SQLException {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+
+        String world = explicitWorld;
+        String coordinates = value.trim();
+        String[] split = coordinates.split("\\s+");
+        if (split.length == 4) {
+            world = split[0];
+            coordinates = split[1] + " " + split[2] + " " + split[3];
+        } else if (split.length != 3) {
+            return;
+        }
+
+        if (world == null || world.isBlank()) {
+            world = fallbackWorld;
+        }
+
+        if (world == null || world.isBlank()) {
+            Doorlock.getInstance().getLogger().warning("Skipping legacy DoorLock migration entry because the world cannot be resolved: " + value);
+            return;
+        }
+
+        try {
+            int x = Integer.parseInt(split[split.length - 3]);
+            int y = Integer.parseInt(split[split.length - 2]);
+            int z = Integer.parseInt(split[split.length - 1]);
+            if (lock) {
+                insertLock(world, x, y, z, key);
+            } else {
+                insertLockable(world, x, y, z);
+            }
+        } catch (NumberFormatException ignored) {
         }
     }
 
@@ -264,6 +286,9 @@ public class SaveUtil {
     }
 
     public static synchronized String getVersion() {
+        if (Doorlock.getInstance() != null && Doorlock.getInstance().getDescription() != null) {
+            return Doorlock.getInstance().getDescription().getVersion();
+        }
         return getMeta("version");
     }
 
