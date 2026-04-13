@@ -62,7 +62,15 @@ public class DoorlockCommand implements CommandExecutor {
             sender.sendMessage(Messages.format("doorlock.update.current", SaveUtil.getVersion()));
             sender.sendMessage(Messages.get("doorlock.update.checking"));
             sender.sendMessage(Messages.get("doorlock.update.console_info"));
-            Updater.fetchUpdates();
+            Updater.fetchUpdatesAsync((Doorlock) Doorlock.getInstance(), available -> {
+                if (sender instanceof Player) {
+                    if (available) {
+                        sender.sendMessage(Messages.get("updater.available"));
+                    } else {
+                        sender.sendMessage(Messages.get("updater.latest_installed"));
+                    }
+                }
+            });
             return true;
         }else if(sub.equalsIgnoreCase("reload")){
             if (!sender.hasPermission("doorlock.admin")) {
@@ -76,10 +84,10 @@ public class DoorlockCommand implements CommandExecutor {
             Messages.init();
             WorldGuardSupport.reload();
             WorldGuardSupport.logStartupState();
+            ((Doorlock) Doorlock.getInstance()).refreshConfigState();
+            ((Doorlock) Doorlock.getInstance()).reloadGameplayContent();
             
-            if (Doorlock.getInstance().getConfig().getBoolean("update", true)) {
-                Updater.fetchUpdates();
-            }
+            ((Doorlock) Doorlock.getInstance()).scheduleUpdateCheck(Doorlock.getInstance().getConfig().getBoolean("update", true));
 
             sender.sendMessage(Messages.get("doorlock.reload.success"));
             return true;
@@ -138,6 +146,10 @@ public class DoorlockCommand implements CommandExecutor {
         }else if(sub.equalsIgnoreCase("getdrill")){
             if (!sender.hasPermission("doorlock.admin")) {
                 sender.sendMessage(Messages.get("command.no_permission"));
+                return true;
+            }
+            if (!Doorlock.getInstance().getConfig().getBoolean("items.doordrill")) {
+                sender.sendMessage(Messages.get("command.getdrill.disabled"));
                 return true;
             }
             if (!(sender instanceof Player)) {
@@ -293,7 +305,7 @@ public class DoorlockCommand implements CommandExecutor {
         // A simple workaround: Just use the key text. The client usually inherits color.
         
         keyComp.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/dl getkey " + key));
-        keyComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§aНажмите, чтобы получить копию ключа\n§7(Вставит команду в чат)")));
+        keyComp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Messages.get("command.info.copy_key_hint"))));
 
         message.addExtra(keyComp);
         

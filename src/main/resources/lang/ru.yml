@@ -5,6 +5,7 @@ command.getkey.success: '&aКлюч выдан с ID: &e%s'
 command.getkey.invalid_uuid: '&cНеверный формат UUID!'
 command.getlocker.success: '&aБлокиратор блоков выдан!'
 command.getdrill.success: '&aДверная дрель выдана!'
+command.getdrill.disabled: '&cДверная дрель отключена в конфигурации плагина.'
 command.info.header: '&e=== Информация о DoorLock ==='
 command.info.db_stats: '&7База данных: &e%d &7ключей, &e%d &7замков'
 command.info.migration: '&7Статус миграции: &e%s'
@@ -13,6 +14,7 @@ command.info.key_id: '&7ID ключа замка: &e%s'
 command.info.no_key: '&7Блок не заперт.'
 command.info.item_key: '&7ID ключа в руке: &e%s'
 command.info.not_lockable: '&7Этот блок нельзя запереть.'
+command.info.copy_key_hint: "&aНажмите, чтобы скопировать ID ключа\n&7(Команда будет подставлена в чат)"
 
 config.missing_path: '&eОтсутствует путь в config.yml: &6%s&e. Используется значение по умолчанию.'
 

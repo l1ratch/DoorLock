@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dev.jones</groupId>
-    <artifactId>doorlock</artifactId>
+    <artifactId>Doorlock</artifactId>
     <version>v2.3</version>
     <packaging>jar</packaging>
 

@@ -90,7 +90,7 @@ public class BlockClaimerListener implements Listener {
 
         try {
             return WorldGuardChecks.canBuild(player, location);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             boolean deny = WorldGuardSupport.handleFailure(player, action, ex);
             return deny ? Boolean.FALSE : null;
         }

@@ -5,6 +5,7 @@ command.getkey.success: '&aKey issued with ID: &e%s'
 command.getkey.invalid_uuid: '&cInvalid UUID format!'
 command.getlocker.success: '&aBlock locker issued!'
 command.getdrill.success: '&aDoor drill issued!'
+command.getdrill.disabled: '&cDoor drill is disabled in the plugin configuration.'
 command.info.header: '&e=== DoorLock Information ==='
 command.info.db_stats: '&7Database: &e%d &7keys, &e%d &7locks'
 command.info.migration: '&7Migration status: &e%s'
@@ -13,6 +14,7 @@ command.info.key_id: '&7Lock key ID: &e%s'
 command.info.no_key: '&7The block is not locked.'
 command.info.item_key: '&7Key ID in hand: &e%s'
 command.info.not_lockable: '&7This block cannot be locked.'
+command.info.copy_key_hint: "&aClick to copy the key ID\n&7(The command will be suggested in chat)"
 
 config.missing_path: '&eMissing config path: &6%s&e. Using default value.'
 

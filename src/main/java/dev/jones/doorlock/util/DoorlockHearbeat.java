@@ -9,6 +9,9 @@ public class DoorlockHearbeat {
     private static int task=-1;
     private static final ConcurrentLinkedQueue<Runnable> queue=new ConcurrentLinkedQueue<>();
     public static void start(){
+        if (task != -1) {
+            return;
+        }
         task=Bukkit.getScheduler().scheduleSyncRepeatingTask(Doorlock.getInstance(), new Runnable() {
             @Override
             public void run() {
@@ -29,6 +32,7 @@ public class DoorlockHearbeat {
             Bukkit.getScheduler().cancelTask(task);
             task = -1;
         }
+        queue.clear();
     }
     public static void queueRunnable(Runnable r){
         queue.add(r);

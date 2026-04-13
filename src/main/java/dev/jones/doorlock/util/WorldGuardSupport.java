@@ -39,7 +39,7 @@ public final class WorldGuardSupport {
     }
 
     public static boolean isAvailable() {
-        return Bukkit.getPluginManager().getPlugin("WorldGuard") != null;
+        return Bukkit.getPluginManager().isPluginEnabled("WorldGuard");
     }
 
     public static boolean isBroken() {

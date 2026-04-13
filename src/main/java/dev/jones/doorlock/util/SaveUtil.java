@@ -87,42 +87,45 @@ public class SaveUtil {
                 return;
             }
             FileConfiguration legacyConfig = YamlConfiguration.loadConfiguration(legacyFile);
-            String defaultWorld = null;
-            if (Doorlock.getInstance().getServer().getWorlds().size() == 1) {
-                defaultWorld = Doorlock.getInstance().getServer().getWorlds().get(0).getName();
-            }
-
+            String singleWorld = Doorlock.getInstance().getServer().getWorlds().size() == 1
+                    ? Doorlock.getInstance().getServer().getWorlds().get(0).getName()
+                    : null;
             boolean hasLegacyKeys = legacyConfig.getConfigurationSection("key") != null;
             boolean hasLegacyLockable = !legacyConfig.getStringList("lockable").isEmpty();
-            if (defaultWorld == null && (hasLegacyKeys || hasLegacyLockable)) {
-                Doorlock.getInstance().getLogger().warning("Legacy DoorLock data was found, but the world cannot be resolved safely on a multi-world server. Migration was skipped to avoid assigning locks to the wrong world.");
-                return;
-            }
+            boolean migratedAny = false;
 
-            if (defaultWorld != null && hasLegacyKeys) {
+            if (hasLegacyKeys) {
                 for (String key : legacyConfig.getConfigurationSection("key").getKeys(false)) {
                     String explicitWorld = legacyConfig.getString("key." + key + ".world");
                     List<String> locations = legacyConfig.getStringList("key." + key + ".locations");
                     for (String value : locations) {
-                        migrateLegacyLocation(value, explicitWorld, defaultWorld, key, true);
+                        migratedAny |= migrateLegacyLocation(value, explicitWorld, singleWorld, key, true);
                     }
                 }
             }
-            if (defaultWorld != null) {
-                List<String> lockable = legacyConfig.getStringList("lockable");
-                for (String value : lockable) {
-                    migrateLegacyLocation(value, null, defaultWorld, null, false);
-                }
+
+            List<String> lockable = legacyConfig.getStringList("lockable");
+            for (String value : lockable) {
+                migratedAny |= migrateLegacyLocation(value, null, singleWorld, null, false);
             }
-            setMeta("migrated", "true");
+
+            if (migratedAny) {
+                setMeta("migrated", "true");
+            } else if (hasLegacyKeys || hasLegacyLockable) {
+                Doorlock.getInstance().getLogger().warning("Legacy DoorLock data was found, but nothing could be migrated automatically. The old data.yml file was left untouched for manual review.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void migrateLegacyLocation(String value, String explicitWorld, String fallbackWorld, String key, boolean lock) throws SQLException {
+    public static synchronized boolean isReady() {
+        return connection != null;
+    }
+
+    private static boolean migrateLegacyLocation(String value, String explicitWorld, String fallbackWorld, String key, boolean lock) throws SQLException {
         if (value == null || value.isBlank()) {
-            return;
+            return false;
         }
 
         String world = explicitWorld;
@@ -132,7 +135,7 @@ public class SaveUtil {
             world = split[0];
             coordinates = split[1] + " " + split[2] + " " + split[3];
         } else if (split.length != 3) {
-            return;
+            return false;
         }
 
         if (world == null || world.isBlank()) {
@@ -141,7 +144,7 @@ public class SaveUtil {
 
         if (world == null || world.isBlank()) {
             Doorlock.getInstance().getLogger().warning("Skipping legacy DoorLock migration entry because the world cannot be resolved: " + value);
-            return;
+            return false;
         }
 
         try {
@@ -153,7 +156,9 @@ public class SaveUtil {
             } else {
                 insertLockable(world, x, y, z);
             }
+            return true;
         } catch (NumberFormatException ignored) {
+            return false;
         }
     }
 

@@ -9,13 +9,13 @@ import dev.jones.doorlock.util.WorldGuardChecks;
 import dev.jones.doorlock.util.WorldGuardSupport;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.block.Action;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -48,7 +48,10 @@ public class KeyListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-        if (timeout.contains(e.getPlayer())) return;
+        if (timeout.contains(e.getPlayer())) {
+            e.setCancelled(true);
+            return;
+        }
         timeout.add(e.getPlayer());
         DoorlockHearbeat.queueRunnable(() -> timeout.remove(e.getPlayer()));
 
@@ -198,7 +201,7 @@ public class KeyListener implements Listener {
 
         try {
             return WorldGuardChecks.canBuild(player, location);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             boolean deny = WorldGuardSupport.handleFailure(player, action, ex);
             return deny ? Boolean.FALSE : null;
         }
